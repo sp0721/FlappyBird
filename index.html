@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flappy Bird Game</title>
+    <style>
+        /* CSS styles go here */
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="bird"></div>
+        <div id="block"></div>
+        <div id="gap"></div>
+    </div>
+    <div id="scoreBoard">Score: 0</div>
+    <div id="gameOverScreen" style="display: none;">
+        <p>Game Over</p>
+        <p>Your Score: <span id="finalScore"></span></p>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+
+<footer>
+    <p>Made by Shreeji Patel</p>
+</footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const bird = document.getElementById('bird');
+    const gameArea = document.getElementById('gameArea');
+    const block = document.getElementById('block');
+    const gap = document.getElementById('gap');
+    const scoreBoard = document.getElementById('scoreBoard');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const finalScore = document.getElementById('finalScore');
+
+    let jumping = false;
+    let gravity = 2;
+    let birdBottom = 250;
+    let blockLeft = 400;
+    let gapHeight = 150;
+    let score = 0;
+    let highScore = localStorage.getItem('highScore') || 0;
+
+    function startGame() {
+        birdBottom -= gravity;
+        bird.style.bottom = birdBottom + 'px';
+        blockLeft -= 5;
+        block.style.left = blockLeft + 'px';
+        gap.style.left = blockLeft + 'px';
+
+        if (blockLeft < -60) {
+            blockLeft = 400;
+            gapHeight = Math.random() * 60 + 140;
+            updateScore();
+        }
+
+        if (birdBottom <= 0 || collisionDetect(bird, block) || collisionDetect(bird, gap)) {
+            gameOver();
+        }
+    }
+
+    let gameTimerId = setInterval(startGame, 20);
+
+    function jump() {
+        if (birdBottom < 500) birdBottom += 50;
+        bird.style.bottom = birdBottom + 'px';
+    }
+
+ function collisionDetect(bird, obstacle) {
+    let birdRect = bird.getBoundingClientRect();
+    let obstacleRect = obstacle.getBoundingClientRect();
+
+    return birdRect.left < obstacleRect.left + obstacleRect.width &&
+           birdRect.left + birdRect.width > obstacleRect.left &&
+           birdRect.top < obstacleRect.top + obstacleRect.height &&
+           birdRect.top + birdRect.height > obstacleRect.top;
+}
+
+
+    function gameOver() {
+        clearInterval(gameTimerId);
+        checkHighScore();
+        finalScore.innerText = score;
+        gameOverScreen.style.display = 'block';
+    }
+
+    function updateScore() {
+        score++;
+        scoreBoard.innerText = 'Score: ' + score;
+        adjustDifficulty();
+    }
+
+    function adjustDifficulty() {
+    if (score % 10 === 0) { // Increase difficulty every 10 points
+        gravity += 0.5; // Increase the speed of falling
+        if (gap.style.height > '100px') { // Reduce the gap size with a lower limit
+            let newGapHeight = parseInt(gap.style.height) - 10;
+            gap.style.height = newGapHeight + 'px';
+        }
+    }
+}
+
+
+    function checkHighScore() {
+        highScore = Math.max(score, highScore);
+        localStorage.setItem('highScore', highScore);
+    }
+
+    function restartGame() {
+        birdBottom = 250;
+        blockLeft = 400;
+        score = 0;
+        scoreBoard.innerText = 'Score: 0';
+        gameOverScreen.style.display = 'none';
+        gameTimerId = setInterval(startGame, 20);
+    }
+
+    gameArea.addEventListener('click', () => {
+        jump();
+    });
+});
+
+    </script>
+</body>
+</html>
